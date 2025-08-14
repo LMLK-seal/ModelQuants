@@ -441,11 +441,16 @@ class ModelQuantizerGUI:
 
     def browse_hf_cache(self):
         try:
-            from huggingface_hub import HfFolder
-            if (models_dir := Path(HfFolder.get_cache_dir()) / 'models').exists():
-                if folder := filedialog.askdirectory(title="Select Model from Cache", initialdir=models_dir): self.model_path.set(folder)
-            else: messagebox.showinfo("Info", "HuggingFace cache not found.")
-        except Exception as e: messagebox.showerror("Error", f"Could not access HF cache: {e}")
+            from huggingface_hub.constants import HF_HUB_CACHE
+            cache_dir = Path(HF_HUB_CACHE)
+            if cache_dir.exists():
+                if folder := filedialog.askdirectory(title="Select Model from Cache", initialdir=cache_dir): self.model_path.set(folder)
+            else:
+                messagebox.showinfo("Info", "HuggingFace cache not found at the default location.")
+        except ImportError:
+            messagebox.showerror("Error", "Could not access HF cache: `huggingface_hub` library is not installed.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not access HF cache: {e}")
 
     def on_model_path_change(self, *args):
         if os.path.isdir(path := self.model_path.get()):
